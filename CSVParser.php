@@ -36,6 +36,15 @@ class CSVParser
             $this->closeConnection();
             exit(0);
         }
+        if (isset($this->options['file'])) {
+            $file = $this->options['file'];
+            if($this->fileFormatValidation($file)){
+                $fileHandle = fopen($file, 'r');
+                if($this->fileHeaderValidation($fileHandle)){
+
+                }
+            }
+        }
     }
     private function help()
     {
@@ -58,5 +67,20 @@ class CSVParser
     private function closeConnection()
     {
         $this->connection->close();
+    }
+    private function fileFormatValidation($file)
+    {
+        $fileExtension = pathinfo($file, PATHINFO_EXTENSION);
+        if (strtolower($fileExtension) !== 'csv') {
+            $this->showError('Invalid file format. Please provide a CSV file.');
+        }
+        return true;
+    }
+    private function fileHeaderValidation($file){
+        $headers = fgetcsv($file);
+        if ($headers === false || count($headers) !== count($this->expectedHeaders) || array_diff($this->expectedHeaders,$headers) == []) {
+            $this->showError('Invalid CSV file headers');
+        }
+        return true;
     }
 }
