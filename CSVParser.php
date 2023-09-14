@@ -18,4 +18,16 @@ class CSVParser
         $this->username = isset($this->options['u']) ? $this->options['u'] : 'root';
         $this->password = isset($this->options['p']) ? $this->options['p'] : '';
     }
+
+    public function run()
+    {
+        if (isset($this->options['help'])) {
+            $this->help();
+        }
+    }
+    private function help()
+    {
+        echo $this->description;
+        exit(0);
+    }
 }
