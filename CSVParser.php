@@ -38,6 +38,9 @@ class CSVParser
         }
         if (isset($this->options['file'])) {
             $file = $this->options['file'];
+            if(!file_exists($file)){
+                $this->showError('The file does not exist.');
+            }
             if($this->fileFormatValidation($file)){
                 $fileHandle = fopen($file, 'r');
                 if($this->fileHeaderValidation($fileHandle)){
