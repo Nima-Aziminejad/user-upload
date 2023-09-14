@@ -41,9 +41,24 @@ class CSVParser
             if($this->fileFormatValidation($file)){
                 $fileHandle = fopen($file, 'r');
                 if($this->fileHeaderValidation($fileHandle)){
+                    while (($row = fgetcsv($fileHandle, 0, ',')) !== false) {
+                        $name = ucfirst(strtolower($row[0]));
+                        $surname = ucfirst(strtolower($row[1]));
+                        $email = strtolower(trim($row[2]));
+                        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            if (!isset($this->options['dry_run'])) {
+                                $this->databaseQuery($name,$surname,$email);
+                            }
+                        }else{
+                            $this->showError("Invalid email format: $email");
+                        }
 
+                    }
                 }
+                fclose($fileHandle);
             }
+            $this->closeConnection();
+            exit(0);
         }
     }
     private function help()
@@ -82,5 +97,16 @@ class CSVParser
             $this->showError('Invalid CSV file headers');
         }
         return true;
+    }
+    private function databaseQuery($name,$username,$email)
+    {
+        try {
+            $stmt = $this->connection->prepare("INSERT INTO users (name, surname, email) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $name, $username, $email);
+            $stmt->execute();
+            $stmt->close();
+        }catch (Exception $exception){
+            $this->showError($exception->getMessage());
+        }
     }
 }
